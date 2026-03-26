@@ -1,0 +1,6 @@
+@FoodGrabber.API_HostAddress = http://localhost:5233
+
+GET {{FoodGrabber.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

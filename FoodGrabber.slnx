@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FoodGrabber.API/FoodGrabber.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/FoodGrabber.Infrastructure/FoodGrabber.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Delivery/">
+    <Project Path="src/Modules/Delivery/FoodGrabber.Delivery/FoodGrabber.Delivery.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/FoodGrabber.Identity/FoodGrabber.Identity.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Menu/">
+    <Project Path="src/Modules/Menu/FoodGrabber.Menu/FoodGrabber.Menu.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Notification/">
+    <Project Path="src/Modules/Notification/FoodGrabber.Notification/FoodGrabber.Notification.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Order/">
+    <Project Path="src/Modules/Order/FoodGrabber.Order/FoodGrabber.Order.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Payment/">
+    <Project Path="src/Modules/Payment/FoodGrabber.Payment/FoodGrabber.Payment.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Restaurant/">
+    <Project Path="src/Modules/Restaurant/FoodGrabber.Restaurant/FoodGrabber.Restaurant.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Review/">
+    <Project Path="src/Modules/Review/FoodGrabber.Review/FoodGrabber.Review.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/FoodGrabber.Shared/FoodGrabber.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FoodGrabber.Identity.Tests/FoodGrabber.Identity.Tests.csproj" />
+    <Project Path="tests/FoodGrabber.Order.Tests/FoodGrabber.Order.Tests.csproj" />
+    <Project Path="tests/FoodGrabber.Restaurant.Tests/FoodGrabber.Restaurant.Tests.csproj" />
+  </Folder>
+</Solution>
