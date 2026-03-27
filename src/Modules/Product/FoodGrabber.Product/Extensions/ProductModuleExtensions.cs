@@ -1,8 +1,10 @@
 using FoodGrabber.Product.Abstractions;
 using FoodGrabber.Product.Contracts;
 using FoodGrabber.Product.Exceptions;
+using FoodGrabber.Product.Infrastructure.Persistence;
 using FoodGrabber.Product.Infrastructure.Persistence.Repositories;
 using FoodGrabber.Product.Services;
+using FoodGrabber.Shared.Pagination;
 using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +20,7 @@ public static class ProductModuleExtensions
     public static IServiceCollection AddProductModule(this IServiceCollection services)
     {
         services.AddScoped<IProductRepository, EfProductRepository>();
+        services.AddScoped<IProductReadContract, ProductReadContract>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IProductSeedService, ProductSeedService>();
         return services;
@@ -45,9 +48,12 @@ public static class ProductModuleExtensions
         await seedService.SeedAsync(cancellationToken);
     }
 
-    private static async Task<IResult> GetAllAsync(IProductService productService, CancellationToken cancellationToken)
+    private static async Task<IResult> GetAllAsync(
+        [AsParameters] PaginationQuery paginationQuery,
+        IProductService productService,
+        CancellationToken cancellationToken)
     {
-        return Results.Ok(await productService.GetAllAsync(cancellationToken));
+        return Results.Ok(await productService.GetAllAsync(paginationQuery, cancellationToken));
     }
 
     private static async Task<IResult> GetByIdAsync(Guid id, IProductService productService, CancellationToken cancellationToken)

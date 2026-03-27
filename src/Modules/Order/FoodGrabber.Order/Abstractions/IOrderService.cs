@@ -1,10 +1,10 @@
-﻿using FoodGrabber.Order.Contracts;
+using FoodGrabber.Order.Contracts;
+using FoodGrabber.Shared.Pagination;
 
-namespace FoodGrabber.Order.Abstractions
+namespace FoodGrabber.Order.Abstractions;
+
+public interface IOrderService
 {
-    public interface IOrderService
-    {
-        Task<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken ct = default);
-        Task<OrderResponse> CreateAsync(OrderUpsertRequest request, CancellationToken ct = default);
-    }
+    Task<PagedResult<OrderResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken ct = default);
+    Task<OrderResponse> CreateAsync(OrderUpsertRequest request, CancellationToken ct = default);
 }

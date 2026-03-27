@@ -1,5 +1,16 @@
 namespace FoodGrabber.Product.Contracts;
 
+public interface IProductReadContract
+{
+    Task<ProductPricingResponse?> GetPricingAsync(Guid productId, CancellationToken ct = default);
+}
+
+public sealed record ProductPricingResponse(
+    Guid Id,
+    string Name,
+    decimal UnitPrice,
+    bool IsActive);
+
 public sealed record ProductUpsertRequest(
     string Name,
     string Description,

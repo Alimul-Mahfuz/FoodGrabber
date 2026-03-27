@@ -22,6 +22,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseFrontendCors();
 app.UseAuthentication();
 app.UseAuthorization();
 

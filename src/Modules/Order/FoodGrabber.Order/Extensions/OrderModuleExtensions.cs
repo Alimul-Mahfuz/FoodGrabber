@@ -1,9 +1,9 @@
 using FoodGrabber.Order.Abstractions;
 using FoodGrabber.Order.Contracts;
 using FoodGrabber.Order.Exceptions;
-using FoodGrabber.Order.Infrastructure.Persistence;
 using FoodGrabber.Order.Infrastructure.Persistence.Repositories;
 using FoodGrabber.Order.Services;
+using FoodGrabber.Shared.Pagination;
 using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -18,7 +18,6 @@ public static class OrderModuleExtensions
     public static IServiceCollection AddOrderModule(this IServiceCollection services)
     {
         services.AddScoped<IOrderRepository, EfOrderRepository>();
-        services.AddScoped<IOrderPricingGateway, OrderPricingGateway>();
         services.AddScoped<IOrderService, OrderServices>();
         return services;
     }
@@ -39,9 +38,12 @@ public static class OrderModuleExtensions
         return app;
     }
 
-    private static async Task<IResult> GetAllAsync(IOrderService orderService, CancellationToken cancellationToken)
+    private static async Task<IResult> GetAllAsync(
+        [AsParameters] PaginationQuery paginationQuery,
+        IOrderService orderService,
+        CancellationToken cancellationToken)
     {
-        var order = await orderService.GetAllAsync(cancellationToken);
+        var order = await orderService.GetAllAsync(paginationQuery, cancellationToken);
         return Results.Ok(order);
     }
 

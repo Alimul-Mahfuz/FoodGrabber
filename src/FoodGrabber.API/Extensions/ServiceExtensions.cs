@@ -15,13 +15,40 @@ namespace FoodGrabber.API.Extensions;
 
 public static class ServiceExtensions
 {
+    private const string FrontendCorsPolicy = "FrontendClient";
+
     public static IServiceCollection AddApplicationModules(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddIdentityInfrastructure(configuration);
+        services.AddFrontendCors(configuration);
         services.AddOrderModule();
         services.AddMenuModule();
         services.AddProductModule();
         return services;
+    }
+
+    public static IServiceCollection AddFrontendCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy(FrontendCorsPolicy, policy =>
+            {
+                policy
+                    .WithOrigins((allowedOrigins is { Length: > 0 } ? allowedOrigins : ["http://localhost:3000", "http://localhost:5173"]).ToArray())
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+
+        return services;
+    }
+
+    public static WebApplication UseFrontendCors(this WebApplication app)
+    {
+        app.UseCors(FrontendCorsPolicy);
+        return app;
     }
 
     private static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)

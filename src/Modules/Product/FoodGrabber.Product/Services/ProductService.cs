@@ -1,16 +1,27 @@
 using FoodGrabber.Product.Abstractions;
 using FoodGrabber.Product.Contracts;
 using FoodGrabber.Product.Exceptions;
+using FoodGrabber.Shared.Pagination;
 using ProductEntity = FoodGrabber.Product.Entities.Product;
 
 namespace FoodGrabber.Product.Services;
 
 public sealed class ProductService(IProductRepository productRepository) : IProductService
 {
-    public async Task<IReadOnlyList<ProductResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ProductResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken cancellationToken = default)
     {
-        var products = await productRepository.GetAllAsync(cancellationToken);
-        return products.Select(MapToResponse).OrderByDescending(p => p.CreatedAt).ToList();
+        var page = paginationQuery.NormalizedPage;
+        var pageSize = paginationQuery.NormalizedPageSize;
+        var products = await productRepository.GetPagedAsync(page, pageSize, cancellationToken);
+        var totalCount = await productRepository.CountAsync(cancellationToken);
+        var items = products.Select(MapToResponse).ToList();
+        return new PagedResult<ProductResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<ProductResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

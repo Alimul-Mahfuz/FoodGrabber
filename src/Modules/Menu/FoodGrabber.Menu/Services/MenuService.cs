@@ -2,16 +2,27 @@ using FoodGrabber.Menu.Abstractions;
 using FoodGrabber.Menu.Contracts;
 using FoodGrabber.Menu.Entities;
 using FoodGrabber.Menu.Exceptions;
+using FoodGrabber.Shared.Pagination;
 using MenuEntity = FoodGrabber.Menu.Entities.Menu;
 
 namespace FoodGrabber.Menu.Services;
 
 public sealed class MenuService(IMenuRepository menuRepository) : IMenuService
 {
-    public async Task<IReadOnlyList<MenuResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<MenuResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken cancellationToken = default)
     {
-        var menus = await menuRepository.GetAllAsync(cancellationToken);
-        return menus.Select(MapToResponse).OrderByDescending(m => m.CreatedAt).ToList();
+        var page = paginationQuery.NormalizedPage;
+        var pageSize = paginationQuery.NormalizedPageSize;
+        var menus = await menuRepository.GetPagedAsync(page, pageSize, cancellationToken);
+        var totalCount = await menuRepository.CountAsync(cancellationToken);
+        var items = menus.Select(MapToResponse).ToList();
+        return new PagedResult<MenuResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<MenuResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)

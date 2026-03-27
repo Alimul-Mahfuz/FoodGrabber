@@ -1,17 +1,33 @@
+using FoodGrabber.Menu.Contracts;
 using FoodGrabber.Order.Abstractions;
 using FoodGrabber.Order.Contracts;
 using FoodGrabber.Order.Entities;
 using FoodGrabber.Order.Exceptions;
+using FoodGrabber.Product.Contracts;
+using FoodGrabber.Shared.Pagination;
 using OrderEntity = FoodGrabber.Order.Entities.Order;
 
 namespace FoodGrabber.Order.Services;
 
-public sealed class OrderServices(IOrderRepository orderRepository, IOrderPricingGateway pricingGateway) : IOrderService
+public sealed class OrderServices(
+    IOrderRepository orderRepository,
+    IProductReadContract productReadContract,
+    IMenuReadContract menuReadContract) : IOrderService
 {
-    public async Task<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken ct = default)
+    public async Task<PagedResult<OrderResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken ct = default)
     {
-        var orders = await orderRepository.GetAllAsync(ct);
-        return orders.Select(MapToResponse).OrderByDescending(o => o.CreateAt).ToList();
+        var page = paginationQuery.NormalizedPage;
+        var pageSize = paginationQuery.NormalizedPageSize;
+        var orders = await orderRepository.GetPagedAsync(page, pageSize, ct);
+        var totalCount = await orderRepository.CountAsync(ct);
+        var items = orders.Select(MapToResponse).ToList();
+        return new PagedResult<OrderResponse>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<OrderResponse> CreateAsync(OrderUpsertRequest request, CancellationToken ct = default)
@@ -72,12 +88,34 @@ public sealed class OrderServices(IOrderRepository orderRepository, IOrderPricin
     {
         if (item.ProductId.HasValue)
         {
-            return await pricingGateway.GetProductPriceAsync(item.ProductId.Value, item.Quantity, ct);
+            var product = await productReadContract.GetPricingAsync(item.ProductId.Value, ct);
+            if (product is null || !product.IsActive)
+            {
+                throw new OrderModuleException($"Product '{item.ProductId.Value}' was not found.");
+            }
+
+            return new PricedOrderItem(
+                product.Id,
+                item.Quantity,
+                product.UnitPrice,
+                product.UnitPrice * item.Quantity,
+                "Product");
         }
 
         if (item.MenuId.HasValue)
         {
-            return await pricingGateway.GetMenuPriceAsync(item.MenuId.Value, item.Quantity, ct);
+            var menu = await menuReadContract.GetPricingAsync(item.MenuId.Value, ct);
+            if (menu is null || !menu.IsActive)
+            {
+                throw new OrderModuleException($"Menu '{item.MenuId.Value}' was not found.");
+            }
+
+            return new PricedOrderItem(
+                menu.Id,
+                item.Quantity,
+                menu.UnitPrice,
+                menu.UnitPrice * item.Quantity,
+                "Menu");
         }
 
         throw new OrderModuleException("Order item must reference a valid product or menu.");

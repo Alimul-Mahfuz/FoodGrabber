@@ -8,6 +8,11 @@ public sealed class EfProductRepository(DbContext dbContext) : IProductRepositor
 {
     public Task EnsureStorageAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
+    public Task<int> CountAsync(CancellationToken ct = default)
+    {
+        return dbContext.Set<ProductEntity>().CountAsync(ct);
+    }
+
     public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
         return dbContext.Set<ProductEntity>().AnyAsync(cancellationToken);
@@ -18,6 +23,16 @@ public sealed class EfProductRepository(DbContext dbContext) : IProductRepositor
         return await dbContext.Set<ProductEntity>()
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductEntity>> GetPagedAsync(int page, int pageSize, CancellationToken ct = default)
+    {
+        return await dbContext.Set<ProductEntity>()
+            .AsNoTracking()
+            .OrderByDescending(product => product.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
     }
 
     public Task<ProductEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -41,5 +56,16 @@ public sealed class EfProductRepository(DbContext dbContext) : IProductRepositor
     {
         dbContext.Set<ProductEntity>().Remove(product);
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var product = await GetByIdAsync(id, cancellationToken);
+        if (product is null)
+        {
+            return;
+        }
+
+        await DeleteAsync(product, cancellationToken);
     }
 }

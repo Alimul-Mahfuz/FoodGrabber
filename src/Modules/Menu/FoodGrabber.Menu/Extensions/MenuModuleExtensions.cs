@@ -1,8 +1,10 @@
 using FoodGrabber.Menu.Abstractions;
 using FoodGrabber.Menu.Contracts;
 using FoodGrabber.Menu.Exceptions;
+using FoodGrabber.Menu.Infrastructure.Persistence;
 using FoodGrabber.Menu.Infrastructure.Persistence.Repositories;
 using FoodGrabber.Menu.Services;
+using FoodGrabber.Shared.Pagination;
 using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -18,6 +20,7 @@ public static class MenuModuleExtensions
     public static IServiceCollection AddMenuModule(this IServiceCollection services)
     {
         services.AddScoped<IMenuRepository, EfMenuRepository>();
+        services.AddScoped<IMenuReadContract, MenuReadContract>();
         services.AddScoped<IMenuService, MenuService>();
         return services;
     }
@@ -37,9 +40,12 @@ public static class MenuModuleExtensions
         return app;
     }
 
-    private static async Task<IResult> GetAllAsync(IMenuService menuService, CancellationToken cancellationToken)
+    private static async Task<IResult> GetAllAsync(
+        [AsParameters] PaginationQuery paginationQuery,
+        IMenuService menuService,
+        CancellationToken cancellationToken)
     {
-        var menus = await menuService.GetAllAsync(cancellationToken);
+        var menus = await menuService.GetAllAsync(paginationQuery, cancellationToken);
         return Results.Ok(menus);
     }
 
