@@ -1,5 +1,6 @@
 using FoodGrabber.Infrastructure.Data;
 using FoodGrabber.Identity.Entites;
+using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,7 @@ public static class IdentitySeedExtensions
         var scopedServices = scope.ServiceProvider;
 
         var dbContext = scopedServices.GetRequiredService<AppDbContext>();
-        await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.MigrateAsync();
 
         var roleManager = scopedServices.GetRequiredService<RoleManager<ApplicationRole>>();
         var userManager = scopedServices.GetRequiredService<UserManager<ApplicationUser>>();

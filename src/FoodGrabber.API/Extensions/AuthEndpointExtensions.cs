@@ -1,4 +1,5 @@
 using FoodGrabber.Identity.Entites;
+using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Identity;
 
 namespace FoodGrabber.API.Extensions;

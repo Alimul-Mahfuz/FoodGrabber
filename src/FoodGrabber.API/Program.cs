@@ -1,4 +1,7 @@
 using FoodGrabber.API.Extensions;
+using FoodGrabber.Menu.Extensions;
+using FoodGrabber.Order.Extensions;
+using FoodGrabber.Product.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +26,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
+app.MapMenuEndpoints();
+app.MapProductEndpoints();
+app.MapOrderEndpoint();
 await app.Services.SeedIdentityAsync(builder.Configuration);
+await app.Services.SeedProductModuleAsync();
 
 app.Run();
 

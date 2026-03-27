@@ -1,5 +1,9 @@
-using FoodGrabber.Infrastructure.Data;
 using FoodGrabber.Identity.Entites;
+using FoodGrabber.Infrastructure.Data;
+using FoodGrabber.Menu.Extensions;
+using FoodGrabber.Order.Extensions;
+using FoodGrabber.Product.Extensions;
+using FoodGrabber.Shared.Abstractions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +18,20 @@ public static class ServiceExtensions
     public static IServiceCollection AddApplicationModules(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddIdentityInfrastructure(configuration);
+        services.AddOrderModule();
+        services.AddMenuModule();
+        services.AddProductModule();
         return services;
     }
 
     private static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=foodgrabber.db";
+            ?? @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=FoodGrab;Integrated Security=True;Trust Server Certificate=True";
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
+        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddScoped<DbContext>(serviceProvider => serviceProvider.GetRequiredService<AppDbContext>());
+        services.AddScoped<IAdminUserProvider, IdentityAdminUserProvider>();
 
         services
             .AddIdentityCore<ApplicationUser>(options =>

@@ -24,6 +24,9 @@
   <Folder Name="/src/Modules/Payment/">
     <Project Path="src/Modules/Payment/FoodGrabber.Payment/FoodGrabber.Payment.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Product/">
+    <Project Path="src/Modules/Product/FoodGrabber.Product/FoodGrabber.Product.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Restaurant/">
     <Project Path="src/Modules/Restaurant/FoodGrabber.Restaurant/FoodGrabber.Restaurant.csproj" />
   </Folder>
