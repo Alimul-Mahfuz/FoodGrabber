@@ -1,4 +1,5 @@
 using FoodGrabber.API.Extensions;
+using FoodGrabber.Identity.Extensions;
 using FoodGrabber.Menu.Extensions;
 using FoodGrabber.Order.Extensions;
 using FoodGrabber.Product.Extensions;
@@ -27,6 +28,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
+app.MapUserEndPoint();
 app.MapMenuEndpoints();
 app.MapProductEndpoints();
 app.MapOrderEndpoint();

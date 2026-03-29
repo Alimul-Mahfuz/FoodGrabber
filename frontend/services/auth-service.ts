@@ -10,6 +10,17 @@ export type LoginResponse = {
 export const authService = {
   async login(credentials: any): Promise<LoginResponse> {
     const data = await apiClient.post<LoginResponse>('/auth/login', credentials);
+    this.setSession(data);
+    return data;
+  },
+
+  async register(userData: any): Promise<LoginResponse> {
+    const data = await apiClient.post<LoginResponse>('/auth/register', userData);
+    this.setSession(data);
+    return data;
+  },
+
+  setSession(data: LoginResponse) {
     if (data.token) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify({
@@ -17,11 +28,6 @@ export const authService = {
         roles: data.roles
       }));
     }
-    return data;
-  },
-
-  async register(userData: any) {
-    return apiClient.post('/auth/register', userData);
   },
 
   isLoggedIn(): boolean {

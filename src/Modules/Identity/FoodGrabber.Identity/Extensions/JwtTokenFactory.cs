@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace FoodGrabber.API.Extensions;
+namespace FoodGrabber.Identity.Extensions;
 
 public sealed class JwtTokenFactory(IOptions<JwtOptions> jwtOptions)
 {

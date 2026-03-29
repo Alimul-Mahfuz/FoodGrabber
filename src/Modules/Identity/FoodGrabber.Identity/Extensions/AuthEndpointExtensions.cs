@@ -1,8 +1,13 @@
+using FoodGrabber.Identity.Abstractions;
 using FoodGrabber.Identity.Entites;
 using FoodGrabber.Shared.Security;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
-namespace FoodGrabber.API.Extensions;
+namespace FoodGrabber.Identity.Extensions;
 
 public static class AuthEndpointExtensions
 {
@@ -18,8 +23,10 @@ public static class AuthEndpointExtensions
 
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
-        UserManager<ApplicationUser> userManager,
-        JwtTokenFactory tokenFactory)
+        [FromServices] UserManager<ApplicationUser> userManager,
+        [FromServices] ICustomerProfileStore customerProfileStore,
+        [FromServices] JwtTokenFactory tokenFactory,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
@@ -37,6 +44,7 @@ public static class AuthEndpointExtensions
         {
             UserName = email,
             Email = email,
+            FullName = request.FullName?.Trim() ?? string.Empty,
             EmailConfirmed = true
         };
 
@@ -47,6 +55,24 @@ public static class AuthEndpointExtensions
         }
 
         await userManager.AddToRoleAsync(user, RoleNames.Customer);
+
+        try
+        {
+            await customerProfileStore.AddAsync(new Customer
+            {
+                UserId = user.Id,
+                FullName = string.IsNullOrWhiteSpace(request.FullName) ? null : request.FullName.Trim(),
+                Email = email,
+                IsActive = true
+            }, cancellationToken);
+        }
+        catch
+        {
+            await userManager.RemoveFromRoleAsync(user, RoleNames.Customer);
+            await userManager.DeleteAsync(user);
+            return Results.Problem("Unable to create customer profile for this registration.", statusCode: StatusCodes.Status500InternalServerError);
+        }
+
         var tokenResult = tokenFactory.CreateToken(user, new[] { RoleNames.Customer });
 
         return Results.Ok(new AuthResponse(tokenResult.Token, tokenResult.ExpiresAtUtc, user.Email ?? email, new[] { RoleNames.Customer }));
@@ -54,8 +80,8 @@ public static class AuthEndpointExtensions
 
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
-        UserManager<ApplicationUser> userManager,
-        JwtTokenFactory tokenFactory)
+        [FromServices] UserManager<ApplicationUser> userManager,
+        [FromServices] JwtTokenFactory tokenFactory)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
@@ -82,6 +108,8 @@ public static class AuthEndpointExtensions
     }
 }
 
-public sealed record RegisterRequest(string Email, string Password);
+
+
+public sealed record RegisterRequest(string Email, string Password, string? FullName);
 public sealed record LoginRequest(string Email, string Password);
 public sealed record AuthResponse(string Token, DateTime ExpiresAtUtc, string Email, IEnumerable<string> Roles);

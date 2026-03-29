@@ -1,8 +1,9 @@
 using FoodGrabber.Identity.Entites;
 using FoodGrabber.Shared.Abstractions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
-namespace FoodGrabber.API.Extensions;
+namespace FoodGrabber.Identity.Extensions;
 
 public sealed class IdentityAdminUserProvider(
     UserManager<ApplicationUser> userManager,

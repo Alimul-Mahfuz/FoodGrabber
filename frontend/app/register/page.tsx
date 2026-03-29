@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth-service';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
+  const router = useRouter();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,8 @@ export default function RegisterPage() {
     setError('');
     
     try {
-       await authService.register({ name, email, password });
+       await authService.register({ fullName, email, password });
+       router.replace('/'); 
     } catch (err: any) {
       setError(err.message || 'Error occurred during registration.');
     } finally {
@@ -68,8 +71,8 @@ export default function RegisterPage() {
             <input 
               type="text" 
               placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
               style={{ 
                 height: '48px', 

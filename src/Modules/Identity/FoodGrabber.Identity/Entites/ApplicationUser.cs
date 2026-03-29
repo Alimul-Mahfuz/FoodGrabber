@@ -6,5 +6,6 @@ namespace FoodGrabber.Identity.Entites
     {
         public string FullName { get; set; } = string.Empty;
         public DateOnly DateOfBirth { get; set; }
+        public Customer? Customer { get; set; }
     }
 }

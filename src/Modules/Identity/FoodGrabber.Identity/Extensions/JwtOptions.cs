@@ -1,4 +1,4 @@
-namespace FoodGrabber.API.Extensions;
+namespace FoodGrabber.Identity.Extensions;
 
 public sealed class JwtOptions
 {

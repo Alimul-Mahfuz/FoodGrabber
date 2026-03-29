@@ -1,4 +1,5 @@
 using FoodGrabber.Identity.Entites;
+using FoodGrabber.Infrastructure.Data.Configurations;
 using FoodGrabber.Menu.Infrastructure.Persistence.Configurations;
 using FoodGrabber.Order.Infrastructure.Persistence.Configurations;
 using FoodGrabber.Product.Infrastructure.Persistence.Configurations;
@@ -11,6 +12,7 @@ namespace FoodGrabber.Infrastructure.Data;
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
+    public DbSet<FoodGrabber.Identity.Entites.Customer> Customers => Set<Customer>();
     public DbSet<FoodGrabber.Menu.Entities.Menu> Menus => Set<FoodGrabber.Menu.Entities.Menu>();
     public DbSet<FoodGrabber.Menu.Entities.MenuProduct> MenuProducts => Set<FoodGrabber.Menu.Entities.MenuProduct>();
     public DbSet<FoodGrabber.Product.Entities.Product> Products => Set<FoodGrabber.Product.Entities.Product>();
@@ -21,6 +23,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CustomerEntityConfiguration).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MenuEntityConfiguration).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderEntityConfiguration).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductEntityConfiguration).Assembly);
