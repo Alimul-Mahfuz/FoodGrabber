@@ -35,7 +35,8 @@ namespace FoodGrabber.Identity.Infrastructures
 
         public async Task<Customer?> GetCustomerByIdAsync(string id, CancellationToken ct = default)
         {
-            var customer = await dbContext.Set<Customer>().FirstOrDefaultAsync(c => c.UserId == id.ToString(), ct);
+            Guid.TryParse(id, out var customerId);
+            var customer = await dbContext.Set<Customer>().FirstOrDefaultAsync(c => c.Id == customerId, ct);
             return customer;
         }
 

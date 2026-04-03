@@ -206,3 +206,10 @@ footer {
 .nav-link {
   @apply text-muted-foreground hover:text-primary transition-colors font-medium;
 }
+
+/* Mobile Sidebar logic (optional for now) */
+@media (max-width: 768px) {
+  .admin-sidebar-mobile {
+    @apply fixed inset-y-0 left-0 -translate-x-full z-50 transition-transform duration-300;
+  }
+}

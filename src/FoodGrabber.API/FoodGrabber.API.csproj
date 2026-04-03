@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\FoodGrabber.Infrastructure\FoodGrabber.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Inventory\FoodGrabber.Inventory\FoodGrabber.Inventory.csproj" />
     <ProjectReference Include="..\Modules\Identity\FoodGrabber.Identity\FoodGrabber.Identity.csproj" />
     <ProjectReference Include="..\Modules\Menu\FoodGrabber.Menu\FoodGrabber.Menu.csproj" />
     <ProjectReference Include="..\Modules\Order\FoodGrabber.Order\FoodGrabber.Order.csproj" />

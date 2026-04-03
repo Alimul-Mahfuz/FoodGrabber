@@ -4,7 +4,8 @@ export type Product = {
   id: string;
   name: string;
   description: string;
-  quantity: number;
+  currentStock: number;
+  stockUnit: string;
   basePrice: number;
   sellingPrice: number;
   image: string | null;
@@ -27,16 +28,40 @@ export const productService = {
     return apiClient.get<ProductResponse>(`/products?Page=${page}&PageSize=${pageSize}`);
   },
   
-  async addProduct(productData: Partial<Product>): Promise<Product> {
-    return apiClient.post<Product>('/products', productData);
+  async addProduct(productData: {
+    name: string;
+    description: string;
+    initialStock: number;
+    stockUnit: string;
+    basePrice: number;
+    sellingPrice: number;
+    image: File;
+    tags?: string[];
+    isActive?: boolean;
+  }): Promise<Product> {
+    const formData = new FormData();
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('initialStock', String(productData.initialStock));
+    formData.append('stockUnit', productData.stockUnit);
+    formData.append('basePrice', String(productData.basePrice));
+    formData.append('sellingPrice', String(productData.sellingPrice));
+    formData.append('image', productData.image);
+    formData.append('isActive', String(productData.isActive ?? true));
+
+    for (const tag of productData.tags ?? []) {
+      formData.append('tags', tag);
+    }
+
+    return apiClient.post<Product>('/products', formData);
   },
 
   async getProductById(id: string): Promise<Product> {
     return apiClient.get<Product>(`/products/${id}`);
   },
 
-  async updateProduct(id: string, productData: Partial<Product>): Promise<Product> {
-    return apiClient.put<Product>(`/products/${id}`, productData);
+  async updateProduct(id: string, formData: FormData): Promise<Product> {
+    return apiClient.put<Product>(`/products/${id}`, formData);
   },
 
   async toggleActive(id: string) {

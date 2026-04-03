@@ -16,6 +16,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<FoodGrabber.Menu.Entities.Menu> Menus => Set<FoodGrabber.Menu.Entities.Menu>();
     public DbSet<FoodGrabber.Menu.Entities.MenuProduct> MenuProducts => Set<FoodGrabber.Menu.Entities.MenuProduct>();
     public DbSet<FoodGrabber.Product.Entities.Product> Products => Set<FoodGrabber.Product.Entities.Product>();
+    public DbSet<FoodGrabber.Product.Entities.ProductStockEntry> ProductStockEntries => Set<FoodGrabber.Product.Entities.ProductStockEntry>();
     public DbSet<FoodGrabber.Order.Entities.Order> Orders => Set<FoodGrabber.Order.Entities.Order>();
     public DbSet<FoodGrabber.Order.Entities.OrderDetails> OrderDetails => Set<FoodGrabber.Order.Entities.OrderDetails>();
 

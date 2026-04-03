@@ -1,19 +1,21 @@
 ﻿using FoodGrabber.Identity.Abstractions;
 using FoodGrabber.Identity.Contracts;
+using FoodGrabber.Identity.Entites;
 using FoodGrabber.Identity.Exceptions;
 using FoodGrabber.Shared.Pagination;
+using Microsoft.AspNetCore.Identity;
 
 namespace FoodGrabber.Identity.Services
 {
-    public class UserService(IUserRepository userRepository) : IUserServices
+    public class UserService(IUserRepository userRepository, UserManager<ApplicationUser> userManager) : IUserServices
     {
-        public async Task<CustomerResponse> CustomerInfoByIdAsync(string guid, CancellationToken ct = default)
+        public async Task<CustomerResponse> CustomerInfoByIdAsync(string customerId, CancellationToken ct = default)
         {
-            var customer = await userRepository.GetCustomerByIdAsync(guid, ct);
+            var customer = await userRepository.GetCustomerByIdAsync(customerId, ct);
 
             if (customer == null)
             {
-                throw new IdentityException($"Customer with ID {guid} not found");
+                throw new IdentityException($"Customer with ID {customerId} not found");
             }
 
             return new CustomerResponse(
@@ -56,8 +58,14 @@ namespace FoodGrabber.Identity.Services
             };
         }
 
-        public async Task<CustomerResponse> UpdateCustomerInfo(CustomerUpdateRequest request, CancellationToken ct = default)
+        public async Task<CustomerResponse> UpdateCustomerInfo(
+            CustomerUpdateRequest request,
+            CancellationToken ct = default)
         {
+            if (request.Id == null)
+            {
+                throw new IdentityException("Please provide customer id");
+            }
 
             if (request.FullName == null)
             {
@@ -67,7 +75,41 @@ namespace FoodGrabber.Identity.Services
             {
                 throw new IdentityException("Email is required");
             }
-            throw new NotImplementedException();
+
+            var customer = await userRepository.GetCustomerByIdAsync(request.Id, ct);
+            if (customer is null)
+            {
+                throw new IdentityException("Customer Id invalid");
+            }
+            customer.Phone1 = request.Phone1;
+            customer.Address1 = request.Address1;
+            customer.Address2 = request.Address2;
+            customer.Email = request.Email;
+            customer.FullName = request.FullName;
+
+            var user = await userManager.FindByIdAsync(customer.UserId);
+            if (user is null)
+            {
+                throw new IdentityException("User not found");
+            }
+
+            user.Email = request.Email;
+            user.FullName = request.FullName;
+            await userManager.UpdateAsync(user);
+            await userRepository.UpdateCustomerInfoByIdAsync(request.Id, customer, ct);
+
+            return new CustomerResponse
+            (
+                customer.Id,
+                customer.UserId,
+                customer.FullName,
+                customer.Phone1,
+                customer.Phone2 ?? "",
+                customer.Address1,
+                customer.Address2,
+                customer.Email,
+                customer.Image ?? ""
+            );
         }
 
 

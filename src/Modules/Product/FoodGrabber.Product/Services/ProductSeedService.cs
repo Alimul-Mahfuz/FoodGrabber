@@ -1,6 +1,7 @@
 using FoodGrabber.Product.Abstractions;
 using FoodGrabber.Shared.Abstractions;
 using ProductEntity = FoodGrabber.Product.Entities.Product;
+using ProductStockEntryEntity = FoodGrabber.Product.Entities.ProductStockEntry;
 
 namespace FoodGrabber.Product.Services;
 
@@ -29,7 +30,8 @@ public sealed class ProductSeedService(
             {
                 Name = "Cheese Burger",
                 Description = "Classic grilled burger with cheese.",
-                Quantity = 120,
+                CurrentStock = 120,
+                StockUnit = "piece",
                 BasePrice = 4.50m,
                 SellingPrice = 6.99m,
                 Tags = "burger,fast-food,beef",
@@ -42,7 +44,8 @@ public sealed class ProductSeedService(
             {
                 Name = "Chicken Pizza",
                 Description = "Thin crust pizza topped with chicken and mozzarella.",
-                Quantity = 80,
+                CurrentStock = 80,
+                StockUnit = "piece",
                 BasePrice = 7.00m,
                 SellingPrice = 10.50m,
                 Tags = "pizza,chicken,dinner",
@@ -55,7 +58,8 @@ public sealed class ProductSeedService(
             {
                 Name = "Cold Coffee",
                 Description = "Chilled coffee drink with creamy texture.",
-                Quantity = 200,
+                CurrentStock = 200,
+                StockUnit = "cup",
                 BasePrice = 1.20m,
                 SellingPrice = 2.99m,
                 Tags = "drink,coffee,cold",
@@ -68,7 +72,18 @@ public sealed class ProductSeedService(
 
         foreach (var product in products)
         {
-            await productRepository.AddAsync(product, cancellationToken);
+            var initialStockEntry = new ProductStockEntryEntity
+            {
+                ProductId = product.Id,
+                Quantity = product.CurrentStock,
+                MovementType = "initial",
+                Unit = product.StockUnit,
+                Notes = "Initial stock from seed data.",
+                UserId = product.UserId,
+                CreatedAt = now
+            };
+
+            await productRepository.AddWithStockEntryAsync(product, initialStockEntry, cancellationToken);
         }
     }
 }

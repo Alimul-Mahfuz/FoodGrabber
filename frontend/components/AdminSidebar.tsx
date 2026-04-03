@@ -16,36 +16,39 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="admin-sidebar">
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-           Admin<span style={{ color: 'var(--accent)' }}>Panel</span>
+    <aside className="w-72 h-screen sticky top-0 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col p-8">
+      <div className="mb-10">
+        <h2 className="text-xl font-black tracking-tighter uppercase">
+           Admin<span className="text-primary italic">Panel</span>
         </h2>
       </div>
 
-      <nav style={{ flex: 1 }}>
+      <nav className="flex-1 flex flex-col gap-1">
         {menuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link 
               key={item.href} 
               href={item.href} 
-              className={`sidebar-link ${isActive ? 'active' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold ${
+                isActive 
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 translate-x-1' 
+                  : 'text-muted-foreground hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-foreground'
+              }`}
             >
-              <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
+              <span className="text-xl leading-none">{item.icon}</span>
               {item.name}
             </Link>
           );
         })}
       </nav>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', marginTop: 'auto' }}>
+      <div className="mt-auto pt-6 border-t border-slate-200 dark:border-zinc-800">
         <button 
           onClick={() => authService.logout()} 
-          className="sidebar-link" 
-          style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer' }}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground font-semibold hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-destructive transition-all duration-200"
         >
-          <span>🚪</span>
+          <span className="text-xl leading-none">🚪</span>
           Sign Out
         </button>
       </div>

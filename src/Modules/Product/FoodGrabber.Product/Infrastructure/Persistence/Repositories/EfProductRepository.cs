@@ -1,6 +1,7 @@
 using FoodGrabber.Product.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using ProductEntity = FoodGrabber.Product.Entities.Product;
+using ProductStockEntryEntity = FoodGrabber.Product.Entities.ProductStockEntry;
 
 namespace FoodGrabber.Product.Infrastructure.Persistence.Repositories;
 
@@ -43,6 +44,16 @@ public sealed class EfProductRepository(DbContext dbContext) : IProductRepositor
     public async Task AddAsync(ProductEntity product, CancellationToken cancellationToken = default)
     {
         dbContext.Set<ProductEntity>().Add(product);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task AddWithStockEntryAsync(
+        ProductEntity product,
+        ProductStockEntryEntity stockEntry,
+        CancellationToken cancellationToken = default)
+    {
+        dbContext.Set<ProductEntity>().Add(product);
+        dbContext.Set<ProductStockEntryEntity>().Add(stockEntry);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

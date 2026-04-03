@@ -1,0 +1,87 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" -C || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - backend
+
+  api:
+    build:
+      context: .
+      dockerfile: src/FoodGrabber.API/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Server=db,1433;Database=FoodGrab;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      Jwt__Key: ${JWT_KEY}
+      DefaultAdmin__Email: ${DEFAULT_ADMIN_EMAIL}
+      DefaultAdmin__Password: ${DEFAULT_ADMIN_PASSWORD}
+      Cors__AllowedOrigins__0: ${FRONTEND_PUBLIC_URL}
+      ObjectStorage__DigitalOcean__Endpoint: ${DO_SPACES_ENDPOINT}
+      ObjectStorage__DigitalOcean__AccessKey: ${DO_SPACES_ACCESS_KEY}
+      ObjectStorage__DigitalOcean__SecretKey: ${DO_SPACES_SECRET_KEY}
+      ObjectStorage__DigitalOcean__BucketName: ${DO_SPACES_BUCKET}
+      ObjectStorage__DigitalOcean__PublicBaseUrl: ${DO_SPACES_PUBLIC_BASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+      - edge
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - edge
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      FRONTEND_DOMAIN: ${FRONTEND_DOMAIN}
+      API_DOMAIN: ${API_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - api
+    networks:
+      - edge
+
+volumes:
+  mssql-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  backend:
+  edge:

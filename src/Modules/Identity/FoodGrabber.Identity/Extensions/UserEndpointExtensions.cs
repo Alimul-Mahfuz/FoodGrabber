@@ -1,4 +1,5 @@
 ﻿using FoodGrabber.Identity.Abstractions;
+using FoodGrabber.Identity.Contracts;
 using FoodGrabber.Shared.Pagination;
 using FoodGrabber.Shared.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -19,9 +20,12 @@ namespace FoodGrabber.Identity.Extensions
                 .WithTags("User");
 
 
-            user.MapGet("/me", GetCustomerInfo).RequireAuthorization(new AuthorizeAttribute { Roles = $"{RoleNames.Admin},{RoleNames.Customer}" });
+            user.MapGet("/customer/{Id}", GetCustomerInfo).RequireAuthorization(new AuthorizeAttribute
+            {
+                Roles = $"{RoleNames.Admin}"
+            });
             user.MapGet("/", GetUserList).RequireAuthorization(new AuthorizeAttribute { Roles = RoleNames.Admin });
-            //user.MapPut("/updateCustomer",)
+            user.MapPut("/updateCustomer", UpdateCustomerInfo).RequireAuthorization(new AuthorizeAttribute { Roles = RoleNames.Admin });
 
 
 
@@ -39,19 +43,22 @@ namespace FoodGrabber.Identity.Extensions
         }
 
         private static async Task<IResult> GetCustomerInfo(
+            [FromQuery] string customerId,
             [FromServices] IUserServices userServices,
             ClaimsPrincipal principal,
             CancellationToken cancellationToken)
         {
-            var userId = ResolveUserId(principal);
-            if (userId == null)
-            {
-                return Results.BadRequest("User not found");
-            }
-            var customer = await userServices.CustomerInfoByIdAsync(userId);
-
-
+            var customer = await userServices.CustomerInfoByIdAsync(customerId);
             return Results.Ok(customer);
+        }
+
+        private static async Task<IResult> UpdateCustomerInfo(CustomerUpdateRequest customerUpdateRequest,
+            ClaimsPrincipal user,
+            [FromServices] IUserServices userServices,
+            CancellationToken cancellationToken = default)
+        {
+            var response = await userServices.UpdateCustomerInfo(customerUpdateRequest, cancellationToken);
+            return Results.Ok(response);
         }
 
         private static string? ResolveUserId(ClaimsPrincipal user)

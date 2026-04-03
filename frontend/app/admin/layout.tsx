@@ -31,20 +31,11 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="admin-layout">
-      {/* Sidebar hidden on small screens can be toggled later, 
-          for now using basic desktop layout */}
+    <div className="flex min-h-screen bg-slate-50 dark:bg-zinc-950">
       <AdminSidebar />
-      <main className="admin-content">
+      <main className="flex-1 p-8 md:p-12 overflow-y-auto">
         {children}
       </main>
-      
-      {/* Hide the global Navbar on admin pages */}
-      <style jsx global>{`
-        header.header {
-          display: none !important;
-        }
-      `}</style>
     </div>
   );
 }

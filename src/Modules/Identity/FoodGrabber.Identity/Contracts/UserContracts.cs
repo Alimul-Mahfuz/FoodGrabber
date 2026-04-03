@@ -27,8 +27,7 @@
     );
 
     public sealed record CustomerUpdateRequest(
-        Guid? Id,
-        string UserId,
+        string Id,
         string FullName,
         string Email,
         string Address1,

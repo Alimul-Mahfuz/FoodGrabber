@@ -47,15 +47,16 @@ export const apiClient = {
   },
 
   async post<T>(endpoint: string, body: any, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<T> {
+    const isFormData = body instanceof FormData;
     const response = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         ...getAuthHeaders(),
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...options.headers,
       },
-      body: JSON.stringify(body),
+      body: isFormData ? body : JSON.stringify(body),
     });
     return handleResponse<T>(response);
   },

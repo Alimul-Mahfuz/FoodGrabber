@@ -70,7 +70,7 @@ export default function AdminProducts() {
                       </div>
                     </Link>
                   </td>
-                  <td style={tdStyle}>{product.quantity} units</td>
+                  <td style={tdStyle}>{product.currentStock} {product.stockUnit}</td>
                   <td style={tdStyle}>{formatCurrency(product.basePrice)}</td>
                   <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--accent)' }}>
                     {formatCurrency(product.sellingPrice)}

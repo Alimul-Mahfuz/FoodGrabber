@@ -1,8 +1,14 @@
 using FoodGrabber.Infrastructure.Data;
+using FoodGrabber.Inventory.Extensions;
 using FoodGrabber.Identity.Extensions;
 using FoodGrabber.Menu.Extensions;
 using FoodGrabber.Order.Extensions;
 using FoodGrabber.Product.Extensions;
+using FoodGrabber.Shared.Abstractions;
+using FoodGrabber.Shared.Services;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -21,9 +27,11 @@ public static class ServiceExtensions
             configuration,
             options => options.UseSqlServer(connectionString));
         services.AddFrontendCors(configuration);
+        services.AddObjectStorage(configuration);
         services.AddOrderModule();
         services.AddMenuModule();
         services.AddProductModule();
+        services.AddInventoryModule();
         return services;
     }
 
@@ -88,6 +96,64 @@ public static class ServiceExtensions
                 }
             });
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddObjectStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        var digitalOceanSection = configuration.GetSection("ObjectStorage:DigitalOcean");
+        var endpoint = digitalOceanSection["Endpoint"];
+        var accessKey = digitalOceanSection["AccessKey"];
+        var secretKey = digitalOceanSection["SecretKey"];
+        var bucketName = digitalOceanSection["BucketName"];
+        var publicBaseUrl = digitalOceanSection["PublicBaseUrl"];
+
+        var isDigitalOceanConfigured =
+            !string.IsNullOrWhiteSpace(endpoint) &&
+            !string.IsNullOrWhiteSpace(accessKey) &&
+            !string.IsNullOrWhiteSpace(secretKey) &&
+            !string.IsNullOrWhiteSpace(bucketName) &&
+            !string.IsNullOrWhiteSpace(publicBaseUrl);
+
+        if (isDigitalOceanConfigured)
+        {
+            services.AddSingleton<IAmazonS3>(_ =>
+            {
+                var credentials = new BasicAWSCredentials(accessKey, secretKey);
+                var s3Config = new AmazonS3Config
+                {
+                    ServiceURL = endpoint,
+                    ForcePathStyle = true,
+                    AuthenticationRegion = RegionEndpoint.USEast1.SystemName
+                };
+
+                return new AmazonS3Client(credentials, s3Config);
+            });
+
+            services.AddSingleton<IObjectStorageService>(_ =>
+                new DigitalOceanObjectStorageService(
+                    _.GetRequiredService<IAmazonS3>(),
+                    bucketName!,
+                    publicBaseUrl!));
+
+            return services;
+        }
+
+        var fileStorageSection = configuration.GetSection("ObjectStorage:File");
+        var rootPath = fileStorageSection["RootPath"];
+        var filePublicBaseUrl = fileStorageSection["PublicBaseUrl"];
+
+        rootPath = string.IsNullOrWhiteSpace(rootPath)
+            ? Path.Combine(AppContext.BaseDirectory, "uploads")
+            : rootPath;
+
+        filePublicBaseUrl = string.IsNullOrWhiteSpace(filePublicBaseUrl)
+            ? "/uploads"
+            : filePublicBaseUrl;
+
+        services.AddSingleton<IObjectStorageService>(_ =>
+            new ObjectStoregeFileSerive(rootPath, filePublicBaseUrl));
 
         return services;
     }

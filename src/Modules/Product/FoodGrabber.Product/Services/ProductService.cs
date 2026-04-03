@@ -30,15 +30,18 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
         return product is null ? null : MapToResponse(product);
     }
 
-    public async Task<ProductResponse> CreateAsync(ProductUpsertRequest request, string userId, CancellationToken cancellationToken = default)
+    public async Task<ProductResponse> CreateAsync(ProductCreateRequest request, string userId, CancellationToken cancellationToken = default)
     {
-        ValidateRequest(request);
+        ValidateCreateRequest(request);
+
+        var normalizedUnit = NormalizeStockUnit(request.StockUnit);
 
         var product = new ProductEntity
         {
             Name = request.Name.Trim(),
             Description = request.Description.Trim(),
-            Quantity = request.Quantity,
+            CurrentStock = 0,
+            StockUnit = normalizedUnit,
             BasePrice = request.BasePrice,
             SellingPrice = request.SellingPrice,
             Image = string.IsNullOrWhiteSpace(request.Image) ? null : request.Image.Trim(),
@@ -65,7 +68,7 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
 
         product.Name = request.Name.Trim();
         product.Description = request.Description.Trim();
-        product.Quantity = request.Quantity;
+        product.StockUnit = NormalizeStockUnit(request.StockUnit);
         product.BasePrice = request.BasePrice;
         product.SellingPrice = request.SellingPrice;
         product.Image = string.IsNullOrWhiteSpace(request.Image) ? null : request.Image.Trim();
@@ -97,10 +100,39 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
             throw new ProductException("Name and description are required.");
         }
 
-        if (request.Quantity < 0 || request.BasePrice < 0 || request.SellingPrice < 0)
+        if (string.IsNullOrWhiteSpace(request.StockUnit))
         {
-            throw new ProductException("Quantity and prices must be non-negative.");
+            throw new ProductException("Stock unit is required.");
         }
+
+        if (request.BasePrice < 0 || request.SellingPrice < 0)
+        {
+            throw new ProductException("Prices must be non-negative.");
+        }
+    }
+
+    private static void ValidateCreateRequest(ProductCreateRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name) || string.IsNullOrWhiteSpace(request.Description))
+        {
+            throw new ProductException("Name and description are required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.StockUnit))
+        {
+            throw new ProductException("Stock unit is required.");
+        }
+
+        if (request.InitialStock < 0 || request.BasePrice < 0 || request.SellingPrice < 0)
+        {
+            throw new ProductException("Initial stock and prices must be non-negative.");
+        }
+    }
+
+    private static string NormalizeStockUnit(string stockUnit)
+    {
+        var normalized = stockUnit.Trim().ToLowerInvariant();
+        return normalized;
     }
 
     private static string NormalizeTags(IEnumerable<string>? tags)
@@ -118,7 +150,8 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
             product.Id,
             product.Name,
             product.Description,
-            product.Quantity,
+            product.CurrentStock,
+            product.StockUnit,
             product.BasePrice,
             product.SellingPrice,
             product.Image,
