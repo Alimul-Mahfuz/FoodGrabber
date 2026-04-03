@@ -8,13 +8,22 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\FoodGrabber.Infrastructure\FoodGrabber.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\Inventory\FoodGrabber.Inventory\FoodGrabber.Inventory.csproj" />
     <ProjectReference Include="..\Modules\Identity\FoodGrabber.Identity\FoodGrabber.Identity.csproj" />
+    <ProjectReference Include="..\Modules\Menu\FoodGrabber.Menu\FoodGrabber.Menu.csproj" />
+    <ProjectReference Include="..\Modules\Order\FoodGrabber.Order\FoodGrabber.Order.csproj" />
+    <ProjectReference Include="..\Modules\Product\FoodGrabber.Product\FoodGrabber.Product.csproj" />
+    <ProjectReference Include="..\Shared\FoodGrabber.Shared\FoodGrabber.Shared.csproj" />
   </ItemGroup>
 
 </Project>

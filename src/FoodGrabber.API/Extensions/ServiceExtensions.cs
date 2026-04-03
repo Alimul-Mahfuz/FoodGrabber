@@ -1,70 +1,62 @@
 using FoodGrabber.Infrastructure.Data;
-using FoodGrabber.Identity.Entites;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
+using FoodGrabber.Inventory.Extensions;
+using FoodGrabber.Identity.Extensions;
+using FoodGrabber.Menu.Extensions;
+using FoodGrabber.Order.Extensions;
+using FoodGrabber.Product.Extensions;
+using FoodGrabber.Shared.Abstractions;
+using FoodGrabber.Shared.Services;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 namespace FoodGrabber.API.Extensions;
 
 public static class ServiceExtensions
 {
+    private const string FrontendCorsPolicy = "FrontendClient";
+
     public static IServiceCollection AddApplicationModules(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentityInfrastructure(configuration);
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=FoodGrab;Integrated Security=True;Trust Server Certificate=True";
+
+        services.AddIdentityModule<AppDbContext>(
+            configuration,
+            options => options.UseSqlServer(connectionString));
+        services.AddFrontendCors(configuration);
+        services.AddObjectStorage(configuration);
+        services.AddOrderModule();
+        services.AddMenuModule();
+        services.AddProductModule();
+        services.AddInventoryModule();
         return services;
     }
 
-    private static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddFrontendCors(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Data Source=foodgrabber.db";
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 
-        services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
-
-        services
-            .AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6;
-            })
-            .AddRoles<ApplicationRole>()
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddSignInManager<SignInManager<ApplicationUser>>();
-
-        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
-        if (string.IsNullOrWhiteSpace(jwtOptions.Key) || jwtOptions.Key.Length < 32)
+        services.AddCors(options =>
         {
-            throw new InvalidOperationException("JWT key is missing or too short. Set Jwt:Key with at least 32 characters.");
-        }
-
-        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-        services.AddScoped<JwtTokenFactory>();
-
-        services
-            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+            options.AddPolicy(FrontendCorsPolicy, policy =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
-                };
+                policy
+                    .WithOrigins((allowedOrigins is { Length: > 0 } ? allowedOrigins : ["http://localhost:3000", "http://localhost:5173"]).ToArray())
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
             });
+        });
 
-        services.AddAuthorization();
         return services;
+    }
+
+    public static WebApplication UseFrontendCors(this WebApplication app)
+    {
+        app.UseCors(FrontendCorsPolicy);
+        return app;
     }
 
     public static IServiceCollection AddSwagger(this IServiceCollection services)
@@ -104,6 +96,64 @@ public static class ServiceExtensions
                 }
             });
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddObjectStorage(this IServiceCollection services, IConfiguration configuration)
+    {
+        var digitalOceanSection = configuration.GetSection("ObjectStorage:DigitalOcean");
+        var endpoint = digitalOceanSection["Endpoint"];
+        var accessKey = digitalOceanSection["AccessKey"];
+        var secretKey = digitalOceanSection["SecretKey"];
+        var bucketName = digitalOceanSection["BucketName"];
+        var publicBaseUrl = digitalOceanSection["PublicBaseUrl"];
+
+        var isDigitalOceanConfigured =
+            !string.IsNullOrWhiteSpace(endpoint) &&
+            !string.IsNullOrWhiteSpace(accessKey) &&
+            !string.IsNullOrWhiteSpace(secretKey) &&
+            !string.IsNullOrWhiteSpace(bucketName) &&
+            !string.IsNullOrWhiteSpace(publicBaseUrl);
+
+        if (isDigitalOceanConfigured)
+        {
+            services.AddSingleton<IAmazonS3>(_ =>
+            {
+                var credentials = new BasicAWSCredentials(accessKey, secretKey);
+                var s3Config = new AmazonS3Config
+                {
+                    ServiceURL = endpoint,
+                    ForcePathStyle = true,
+                    AuthenticationRegion = RegionEndpoint.USEast1.SystemName
+                };
+
+                return new AmazonS3Client(credentials, s3Config);
+            });
+
+            services.AddSingleton<IObjectStorageService>(_ =>
+                new DigitalOceanObjectStorageService(
+                    _.GetRequiredService<IAmazonS3>(),
+                    bucketName!,
+                    publicBaseUrl!));
+
+            return services;
+        }
+
+        var fileStorageSection = configuration.GetSection("ObjectStorage:File");
+        var rootPath = fileStorageSection["RootPath"];
+        var filePublicBaseUrl = fileStorageSection["PublicBaseUrl"];
+
+        rootPath = string.IsNullOrWhiteSpace(rootPath)
+            ? Path.Combine(AppContext.BaseDirectory, "uploads")
+            : rootPath;
+
+        filePublicBaseUrl = string.IsNullOrWhiteSpace(filePublicBaseUrl)
+            ? "/uploads"
+            : filePublicBaseUrl;
+
+        services.AddSingleton<IObjectStorageService>(_ =>
+            new ObjectStoregeFileSerive(rootPath, filePublicBaseUrl));
 
         return services;
     }

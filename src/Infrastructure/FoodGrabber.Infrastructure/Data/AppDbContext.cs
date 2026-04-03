@@ -1,18 +1,34 @@
 using FoodGrabber.Identity.Entites;
+using FoodGrabber.Infrastructure.Data.Configurations;
+using FoodGrabber.Menu.Infrastructure.Persistence.Configurations;
+using FoodGrabber.Order.Infrastructure.Persistence.Configurations;
+using FoodGrabber.Product.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodGrabber.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
+    public DbSet<FoodGrabber.Identity.Entites.Customer> Customers => Set<Customer>();
+    public DbSet<FoodGrabber.Menu.Entities.Menu> Menus => Set<FoodGrabber.Menu.Entities.Menu>();
+    public DbSet<FoodGrabber.Menu.Entities.MenuProduct> MenuProducts => Set<FoodGrabber.Menu.Entities.MenuProduct>();
+    public DbSet<FoodGrabber.Product.Entities.Product> Products => Set<FoodGrabber.Product.Entities.Product>();
+    public DbSet<FoodGrabber.Product.Entities.ProductStockEntry> ProductStockEntries => Set<FoodGrabber.Product.Entities.ProductStockEntry>();
+    public DbSet<FoodGrabber.Order.Entities.Order> Orders => Set<FoodGrabber.Order.Entities.Order>();
+    public DbSet<FoodGrabber.Order.Entities.OrderDetails> OrderDetails => Set<FoodGrabber.Order.Entities.OrderDetails>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
-        // Rename Identity tables to cleaner names
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CustomerEntityConfiguration).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MenuEntityConfiguration).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderEntityConfiguration).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductEntityConfiguration).Assembly);
+
         modelBuilder.Entity<ApplicationUser>().ToTable("Users");
         modelBuilder.Entity<ApplicationRole>().ToTable("Roles");
         modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
