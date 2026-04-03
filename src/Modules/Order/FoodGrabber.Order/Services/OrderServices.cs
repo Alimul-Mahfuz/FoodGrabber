@@ -39,10 +39,14 @@ public sealed class OrderServices(
         {
             CustomerId = request.CustomerId,
             UserId = request.UserId,
+            ServiceType = request.OrderType == OrderTypeContract.Online ? ServiceType.Delivery : ServiceType.Takeaway,
             OrderType = MapOrderType(request.OrderType),
-            Status = OrderStatus.Unpaid,
+            Status = OrderStatus.Created,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
+            SubtotalAmount = 0,
+            TaxAmount = 0,
+            DiscountAmount = 0
         };
 
         foreach (var item in request.OrderDetails)
@@ -54,13 +58,25 @@ public sealed class OrderServices(
                 OrderId = order.Id,
                 MenuId = item.MenuId,
                 ProductId = item.ProductId,
+                ItemNameSnapshot = pricedItem.ItemName,
+                PriceSource = pricedItem.PriceSource,
                 Quantity = item.Quantity,
                 UnitPrice = pricedItem.UnitPrice,
                 TotalPrice = pricedItem.TotalPrice
             });
         }
 
-        order.TotalPrice = order.OrderDetails.Sum(detail => detail.TotalPrice);
+        order.SubtotalAmount = order.OrderDetails.Sum(detail => detail.TotalPrice);
+        order.TotalPrice = order.SubtotalAmount + order.TaxAmount - order.DiscountAmount;
+        order.StatusHistory.Add(new OrderStatusHistory
+        {
+            OrderId = order.Id,
+            PreviousStatus = null,
+            CurrentStatus = order.Status,
+            ChangedBy = "system",
+            Note = "Order created",
+            ChangedAt = now
+        });
 
         await orderRepository.AddAsync(order, ct);
         return MapToResponse(order);
@@ -96,6 +112,7 @@ public sealed class OrderServices(
 
             return new PricedOrderItem(
                 product.Id,
+                product.Name,
                 item.Quantity,
                 product.UnitPrice,
                 product.UnitPrice * item.Quantity,
@@ -112,6 +129,7 @@ public sealed class OrderServices(
 
             return new PricedOrderItem(
                 menu.Id,
+                menu.Name,
                 item.Quantity,
                 menu.UnitPrice,
                 menu.UnitPrice * item.Quantity,

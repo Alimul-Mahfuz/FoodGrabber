@@ -43,11 +43,12 @@ namespace FoodGrabber.Order.Contracts
         decimal TotalPrice
         );
 
-    public sealed record PricedOrderItem(
-        Guid ItemId,
-        int Quantity,
-        decimal UnitPrice,
-        decimal TotalPrice,
-        string PriceSource
-        );
+public sealed record PricedOrderItem(
+    Guid ItemId,
+    string ItemName,
+    int Quantity,
+    decimal UnitPrice,
+    decimal TotalPrice,
+    string PriceSource
+    );
 }

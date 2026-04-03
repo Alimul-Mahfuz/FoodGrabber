@@ -18,7 +18,7 @@ export default function HomePage() {
             Thoughtfully sourced ingredients, prepared with care, 
             delivered with ease. Join us on a journey of refined culinary simplicity.
           </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
             <Link href="/menu" className="btn btn-primary">Browse Menu</Link>
             <Link href="/about" className="btn btn-secondary">Our Story</Link>
           </div>
