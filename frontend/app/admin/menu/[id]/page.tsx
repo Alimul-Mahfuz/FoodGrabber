@@ -138,8 +138,8 @@ export default function MenuDetailsPage() {
           </div>
 
           <div style={{ padding: '0 1rem' }}>
-             <p style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Created: {new Date((menu as any).createdAt).toLocaleDateString()}</p>
-             <p style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Last Update: {new Date((menu as any).updatedAt).toLocaleDateString()}</p>
+             <p style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Created: {new Date(menu.createdAt || '').toLocaleDateString()}</p>
+             <p style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Last Update: {new Date(menu.updatedAt || '').toLocaleDateString()}</p>
           </div>
         </div>
 

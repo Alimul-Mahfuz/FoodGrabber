@@ -15,10 +15,22 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<FoodGrabber.Identity.Entites.Customer> Customers => Set<Customer>();
     public DbSet<FoodGrabber.Menu.Entities.Menu> Menus => Set<FoodGrabber.Menu.Entities.Menu>();
     public DbSet<FoodGrabber.Menu.Entities.MenuProduct> MenuProducts => Set<FoodGrabber.Menu.Entities.MenuProduct>();
+    public DbSet<FoodGrabber.Menu.Entities.MenuCategory> MenuCategories => Set<FoodGrabber.Menu.Entities.MenuCategory>();
+    public DbSet<FoodGrabber.Menu.Entities.MenuCategoryProduct> MenuCategoryProducts => Set<FoodGrabber.Menu.Entities.MenuCategoryProduct>();
     public DbSet<FoodGrabber.Product.Entities.Product> Products => Set<FoodGrabber.Product.Entities.Product>();
     public DbSet<FoodGrabber.Product.Entities.ProductStockEntry> ProductStockEntries => Set<FoodGrabber.Product.Entities.ProductStockEntry>();
+    public DbSet<FoodGrabber.Product.Entities.ProductCategory> ProductCategories => Set<FoodGrabber.Product.Entities.ProductCategory>();
+    public DbSet<FoodGrabber.Product.Entities.ProductModifierGroup> ProductModifierGroups => Set<FoodGrabber.Product.Entities.ProductModifierGroup>();
+    public DbSet<FoodGrabber.Product.Entities.ProductModifierOption> ProductModifierOptions => Set<FoodGrabber.Product.Entities.ProductModifierOption>();
+    public DbSet<FoodGrabber.Product.Entities.ProductPriceHistory> ProductPriceHistories => Set<FoodGrabber.Product.Entities.ProductPriceHistory>();
+    public DbSet<FoodGrabber.Product.Entities.ProductAvailabilityWindow> ProductAvailabilityWindows => Set<FoodGrabber.Product.Entities.ProductAvailabilityWindow>();
     public DbSet<FoodGrabber.Order.Entities.Order> Orders => Set<FoodGrabber.Order.Entities.Order>();
     public DbSet<FoodGrabber.Order.Entities.OrderDetails> OrderDetails => Set<FoodGrabber.Order.Entities.OrderDetails>();
+    public DbSet<FoodGrabber.Order.Entities.OrderStatusHistory> OrderStatusHistory => Set<FoodGrabber.Order.Entities.OrderStatusHistory>();
+    public DbSet<FoodGrabber.Order.Entities.OrderItemModifier> OrderItemModifiers => Set<FoodGrabber.Order.Entities.OrderItemModifier>();
+    public DbSet<FoodGrabber.Order.Entities.Restaurant> Restaurants => Set<FoodGrabber.Order.Entities.Restaurant>();
+    public DbSet<FoodGrabber.Order.Entities.Branch> Branches => Set<FoodGrabber.Order.Entities.Branch>();
+    public DbSet<FoodGrabber.Order.Entities.DiningTable> DiningTables => Set<FoodGrabber.Order.Entities.DiningTable>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -14,8 +14,17 @@ public sealed class OrderDetailsEntityConfiguration : IEntityTypeConfiguration<E
         builder.Property(orderDetails => orderDetails.PaymentId).IsRequired().HasColumnName("payment_id");
         builder.Property(orderDetails => orderDetails.MenuId).HasColumnName("menu_id");
         builder.Property(orderDetails => orderDetails.ProductId).HasColumnName("product_id");
+        builder.Property(orderDetails => orderDetails.ItemNameSnapshot).IsRequired().HasMaxLength(200).HasColumnName("item_name_snapshot");
+        builder.Property(orderDetails => orderDetails.PriceSource).IsRequired().HasMaxLength(50).HasColumnName("price_source");
         builder.Property(orderDetails => orderDetails.Quantity).IsRequired().HasColumnName("quantity");
         builder.Property(orderDetails => orderDetails.UnitPrice).HasColumnType("decimal(18,2)").HasColumnName("unit_price");
         builder.Property(orderDetails => orderDetails.TotalPrice).HasColumnType("decimal(18,2)").HasColumnName("total_price");
+
+        builder.HasMany(orderDetails => orderDetails.Modifiers)
+            .WithOne(modifier => modifier.OrderDetails)
+            .HasForeignKey(modifier => modifier.OrderDetailsId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(orderDetails => orderDetails.OrderId);
     }
 }

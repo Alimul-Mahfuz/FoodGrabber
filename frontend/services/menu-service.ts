@@ -13,6 +13,8 @@ export type Menu = {
   sellingPrice: number;
   isActive: boolean;
   products: MenuProduct[];
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export const menuService = {
