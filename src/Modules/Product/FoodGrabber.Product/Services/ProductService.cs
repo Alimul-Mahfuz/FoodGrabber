@@ -167,13 +167,13 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
     {
         var inValidate = ProductId.Where(id => !Guid.TryParse(id, out _)).ToList();
 
-        if (inValidate.Any)
+        if (inValidate.Any())
         {
             throw new ArgumentException("Invalid Guid found");
         }
 
-        var guiIds = ProductId.Select(Guid.Parse).ToList();
+        var guiIds = ProductId.Select(Guid.Parse).ToArray();
 
-        var productList = productRepository.GetAllProductPricesByIds()
+        var productList = productRepository.GetAllProductPricesByIds(guiIds, ctx);
     }
 }
