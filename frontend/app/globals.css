@@ -52,10 +52,10 @@
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    @apply h-48 aspect-auto;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
+    @apply p-5 flex flex-col gap-3 flex-1;
     --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -64,10 +64,17 @@
     --accent: 240 3.7% 15.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    @apply gap-6 items-stretch;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+  }
+  .home-card {
+    @apply h-full flex flex-col;
+  }
+  .home-card .card-content > div {
+    margin-top: auto;
   }
 }
 
@@ -131,6 +138,26 @@ h1, h2, h3, h4, h5 {
 
 .card {
   @apply relative rounded-3xl overflow-hidden bg-card border border-border/40 hover:border-border/80 transition-all duration-500 hover:shadow-2xl hover:shadow-black/5;
+}
+
+.home-card .card-img {
+  aspect-ratio: 4 / 3;
+}
+
+.home-card .card-content {
+  @apply p-5;
+}
+
+.home-card .card-price {
+  @apply text-lg;
+}
+
+.home-products-section .section-title {
+  @apply mb-8;
+}
+
+.home-products-grid {
+  @apply gap-6;
 }
 
 .card-img {

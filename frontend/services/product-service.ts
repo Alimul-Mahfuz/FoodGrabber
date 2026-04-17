@@ -24,8 +24,8 @@ export type ProductResponse = {
 };
 
 export const productService = {
-  async getProducts(page = 1, pageSize = 10): Promise<ProductResponse> {
-    return apiClient.get<ProductResponse>(`/products?Page=${page}&PageSize=${pageSize}`);
+  async getProducts(page = 1, pageSize = 10, options: { auth?: boolean } = {}): Promise<ProductResponse> {
+    return apiClient.get<ProductResponse>(`/products?Page=${page}&PageSize=${pageSize}`, options);
   },
   
   async addProduct(productData: {

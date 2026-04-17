@@ -6,8 +6,6 @@ using FoodGrabber.Product.Infrastructure.Persistence.Repositories;
 using FoodGrabber.Product.Services;
 using FoodGrabber.Shared.Abstractions;
 using FoodGrabber.Shared.Pagination;
-using FoodGrabber.Shared.Security;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,8 +29,7 @@ public static class ProductModuleExtensions
     public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/products")
-            .WithTags("Products")
-            .RequireAuthorization(new AuthorizeAttribute { Roles = RoleNames.Admin });
+            .WithTags("Products");
 
         group.MapGet("/", GetAllAsync);
         group.MapGet("/{id:guid}", GetByIdAsync);

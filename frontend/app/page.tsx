@@ -1,11 +1,66 @@
+"use client";
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { productService } from '@/services/product-service';
+import { authService } from '@/services/auth-service';
 
 export default function HomePage() {
-  const menuItems = [
-    { id: 1, name: 'Truffle Tagliatelle', price: '$22.00', category: 'Pasta' },
-    { id: 2, name: 'Citrus Glazed Salmon', price: '$28.00', category: 'Seafood' },
-    { id: 3, name: 'Burrata & Tomato Salad', price: '$16.00', category: 'Salads' },
-  ];
+  const router = useRouter();
+  const [products, setProducts] = useState<Array<{
+    id: string;
+    name: string;
+    description: string;
+    sellingPrice: number;
+    image: string | null;
+    tags: string[];
+  }>>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleOrderNow = () => {
+    if (authService.isLoggedIn()) {
+      router.push('/admin/menu');
+      return;
+    }
+
+    router.push('/login?returnUrl=/admin/menu');
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const response = await productService.getProducts(1, 10, { auth: false });
+
+        if (!isMounted) {
+          return;
+        }
+
+        setProducts(response.items);
+        setError(null);
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
+        const message = err instanceof Error ? err.message : 'Failed to load products';
+        setError(message);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="container">
@@ -29,29 +84,49 @@ export default function HomePage() {
       </section>
 
       {/* Product List */}
-      <section style={{ padding: '80px 0' }}>
+      <section className="home-products-section" style={{ padding: '80px 0' }}>
         <span className="section-label">A Glimpse of our menu</span>
         <h2 className="section-title">The Seasonal Classics.</h2>
         
-        <div className="card-grid" style={{ padding: '0' }}>
-          {menuItems.map((item, idx) => (
-            <div key={item.id} className={`card animate-fade-up stagger-${idx + 1}`}>
-              <div className="card-img">
-                Dish {item.id} Preview
-              </div>
-              <div className="card-content">
-                <span className="card-tag">{item.category}</span>
-                <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{item.name}</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                  A harmonious blend of textures and seasonal aromas crafted for your palate.
-                </p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
-                   <span className="card-price">{item.price}</span>
-                   <button className="btn btn-primary" style={{ padding: '0 16px', height: '36px', fontSize: '0.8rem' }}>Order Now</button>
+        {error && (
+          <div style={{ padding: '20px', backgroundColor: '#fee2e2', borderRadius: 'var(--radius)', marginBottom: '20px', color: '#991b1b' }}>
+            Error loading products: {error}
+          </div>
+        )}
+
+        <div className="card-grid home-products-grid" style={{ padding: '0' }}>
+          {isLoading ? (
+            <p style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px 0' }}>
+              Loading products...
+            </p>
+          ) : products.length > 0 ? (
+            products.map((product, idx) => (
+              <div key={product.id} className={`card home-card animate-fade-up stagger-${idx + 1}`}>
+                {product.image ? (
+                  <div className="card-img" style={{ backgroundImage: `url(${product.image})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                ) : (
+                  <div className="card-img" style={{ background: '#F4F4F5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#A1A1AA' }}>
+                    No Image
+                  </div>
+                )}
+                <div className="card-content">
+                  <span className="card-tag">{product.tags?.[0] || 'Food'}</span>
+                  <h3 style={{ fontSize: '1.05rem', marginBottom: '6px' }}>{product.name}</h3>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.8rem', lineHeight: '1.45' }}>
+                    {product.description}
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', gap: '12px' }}>
+                    <span className="card-price">${product.sellingPrice.toFixed(2)}</span>
+                    <button onClick={handleOrderNow} className="btn btn-primary" style={{ padding: '0 14px', height: '32px', fontSize: '0.75rem' }}>Order Now</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p style={{ textAlign: 'center', color: 'var(--muted)', padding: '40px 0' }}>
+              {error ? `Unable to load products. ${error}` : 'No products available'}
+            </p>
+          )}
         </div>
       </section>
 

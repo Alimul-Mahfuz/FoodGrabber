@@ -1,16 +1,18 @@
+using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using FoodGrabber.Cart.Extensions;
+using FoodGrabber.Identity.Extensions;
 using FoodGrabber.Infrastructure.Data;
 using FoodGrabber.Inventory.Extensions;
-using FoodGrabber.Identity.Extensions;
 using FoodGrabber.Menu.Extensions;
 using FoodGrabber.Order.Extensions;
 using FoodGrabber.Product.Extensions;
 using FoodGrabber.Shared.Abstractions;
 using FoodGrabber.Shared.Services;
-using Amazon;
-using Amazon.Runtime;
-using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
+
 
 namespace FoodGrabber.API.Extensions;
 
@@ -32,6 +34,7 @@ public static class ServiceExtensions
         services.AddMenuModule();
         services.AddProductModule();
         services.AddInventoryModule();
+        services.AddCartModule();
         return services;
     }
 
@@ -81,18 +84,11 @@ public static class ServiceExtensions
                 Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
             });
 
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            c.AddSecurityRequirement(openApiDocument => new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
+                    new OpenApiSecuritySchemeReference("Bearer", openApiDocument, null),
+                    []
                 }
             });
         });

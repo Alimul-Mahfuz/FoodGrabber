@@ -5,8 +5,6 @@ using FoodGrabber.Inventory.Infrastructure.Persistence.Repositories;
 using FoodGrabber.Inventory.Services;
 using FoodGrabber.Shared.Abstractions;
 using FoodGrabber.Shared.Pagination;
-using FoodGrabber.Shared.Security;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -28,8 +26,8 @@ public static class InventoryModuleExtensions
     public static IEndpointRouteBuilder MapInventoryEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/inventory")
-            .WithTags("Inventory")
-            .RequireAuthorization(new AuthorizeAttribute { Roles = RoleNames.Admin });
+            .WithTags("Inventory");
+        //.RequireAuthorization(new AuthorizeAttribute { Roles = RoleNames.Admin });
 
         group.MapGet("/products/{productId:guid}/entries", GetEntriesAsync);
         group.MapPost("/products/{productId:guid}/adjust", AdjustStockAsync);

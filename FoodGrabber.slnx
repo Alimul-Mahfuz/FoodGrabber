@@ -12,6 +12,12 @@
   <Folder Name="/src/Modules/Identity/">
     <Project Path="src/Modules/Identity/FoodGrabber.Identity/FoodGrabber.Identity.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Inventory/">
+    <Project Path="src/Modules/Inventory/FoodGrabber.Inventory/FoodGrabber.Inventory.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Cart/">
+    <Project Path="src/Modules/Cart/FoodGrabber.Cart/FoodGrabber.Cart.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Menu/">
     <Project Path="src/Modules/Menu/FoodGrabber.Menu/FoodGrabber.Menu.csproj" />
   </Folder>

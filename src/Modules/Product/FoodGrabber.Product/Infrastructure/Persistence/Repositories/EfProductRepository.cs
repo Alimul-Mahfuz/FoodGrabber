@@ -79,4 +79,12 @@ public sealed class EfProductRepository(DbContext dbContext) : IProductRepositor
 
         await DeleteAsync(product, cancellationToken);
     }
+
+    public async Task<List<FoodGrabber.Product.Entities.Product>> GetAllProductPricesByIds(Guid[] ProductId, CancellationToken ctx = default)
+    {
+        return await dbContext.Set<FoodGrabber.Product.Entities.Product>()
+            .Where(p => ProductId.Contains(p.Id))
+            .ToListAsync();
+    }
+
 }

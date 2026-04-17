@@ -1,12 +1,13 @@
 using FoodGrabber.Product.Abstractions;
 using FoodGrabber.Product.Contracts;
 using FoodGrabber.Product.Exceptions;
+using FoodGrabber.Shared.Abstractions;
 using FoodGrabber.Shared.Pagination;
 using ProductEntity = FoodGrabber.Product.Entities.Product;
 
 namespace FoodGrabber.Product.Services;
 
-public sealed class ProductService(IProductRepository productRepository) : IProductService
+public sealed class ProductService(IProductRepository productRepository) : IProductService, IProductContract
 {
     public async Task<PagedResult<ProductResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken cancellationToken = default)
     {
@@ -160,5 +161,19 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
             product.UserId,
             product.CreatedAt,
             product.UpdatedAt);
+    }
+
+    public Task<List<ProductPriceResponse>> GetThePriceById(string[] ProductId, CancellationToken ctx)
+    {
+        var inValidate = ProductId.Where(id => !Guid.TryParse(id, out _)).ToList();
+
+        if (inValidate.Any)
+        {
+            throw new ArgumentException("Invalid Guid found");
+        }
+
+        var guiIds = ProductId.Select(Guid.Parse).ToList();
+
+        var productList = productRepository.GetAllProductPricesByIds()
     }
 }

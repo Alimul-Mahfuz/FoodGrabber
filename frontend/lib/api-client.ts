@@ -6,6 +6,7 @@ type RequestOptions = {
   body?: any;
   cache?: RequestCache;
   next?: NextFetchRequestConfig;
+  auth?: boolean;
 };
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -34,13 +35,14 @@ function getAuthHeaders(): Record<string, string> {
 
 export const apiClient = {
   async get<T>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<T> {
+    const { auth = true, headers, ...requestOptions } = options;
     const response = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
+      ...requestOptions,
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeaders(),
-        ...options.headers,
+        ...(auth ? getAuthHeaders() : {}),
+        ...headers,
       },
     });
     return handleResponse<T>(response);

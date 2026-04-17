@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/auth-service';
 
 export default function LoginPage() {
@@ -11,18 +11,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/';
 
   // Standard login check to prevent visiting when already logged in
   useEffect(() => {
     if (authService.isLoggedIn()) {
       const user = authService.getUser();
       if (user?.roles.includes('Admin')) {
-        router.replace('/admin/dashboard');
+        router.replace(returnUrl !== '/' ? returnUrl : '/admin/dashboard');
       } else {
-        router.replace('/');
+        router.replace(returnUrl);
       }
     }
-  }, [router]);
+  }, [router, returnUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +37,9 @@ export default function LoginPage() {
       // Redirect based on role
       // use replace to prevent backward redirection to login page
       if (data.roles.includes('Admin')) {
-        router.replace('/admin/dashboard');
+        router.replace(returnUrl !== '/' ? returnUrl : '/admin/dashboard');
       } else {
-        router.replace('/');
+        router.replace(returnUrl);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please check your credentials.');
