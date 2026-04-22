@@ -75,7 +75,7 @@ public sealed class EfCartRepository(DbContext dbContext) : ICartRepository
             cart.TotalPrice = 0m;
             foreach (var incomingItem in cart.CartItems)
             {
-                cart.TotalPrice += incomingItem.Quantity;
+                cart.TotalPrice += incomingItem.Quantity * incomingItem.UnitPrice;
             }
 
             dbContext.Set<CartEntity>().Add(cart);
@@ -97,6 +97,7 @@ public sealed class EfCartRepository(DbContext dbContext) : ICartRepository
                     ItemId = incomingItem.ItemId,
                     ItemType = incomingItem.ItemType,
                     Quantity = incomingItem.Quantity,
+                    UnitPrice = incomingItem.UnitPrice,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 });
@@ -104,15 +105,75 @@ public sealed class EfCartRepository(DbContext dbContext) : ICartRepository
             else
             {
                 existingItem.Quantity += incomingItem.Quantity;
+                existingItem.UnitPrice = incomingItem.UnitPrice;
                 existingItem.UpdatedAt = DateTime.UtcNow;
             }
 
-            existingCart.TotalPrice += incomingItem.Quantity;
+            existingCart.TotalPrice += incomingItem.Quantity * incomingItem.UnitPrice;
         }
 
         existingCart.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(ct);
         return existingCart;
+    }
+
+    public async Task<CartEntity?> IsItemExistOnActiveCart(Guid itemId, Guid userId)
+    {
+        var cart = await dbContext.Set<CartEntity>()
+            .Include(c => c.CartItems)
+            .FirstOrDefaultAsync(c => c.UserId == userId
+                                   && c.Status != CartStatus.Complete);
+
+        if (cart is null)
+            return null;
+
+        return cart.CartItems.Any(item => item.ItemId == itemId) ? cart : null;
+    }
+
+    public async Task<bool> RemoveItemFromCartAsync(Guid ItemId, Guid UserId, int Quantity, CancellationToken ctx = default)
+    {
+        var cart = await this.IsItemExistOnActiveCart(ItemId, UserId);
+        if (cart == null)
+        {
+            return false;
+        }
+
+        var item = cart.CartItems.FirstOrDefault(i => i.ItemId == ItemId);
+
+        if (item == null)
+        {
+            return false;
+        }
+
+        if (Quantity >= item.Quantity)
+        {
+            cart.CartItems.Remove(item);
+        }
+        else
+        {
+            item.Quantity -= Quantity;
+            item.UpdatedAt = DateTime.UtcNow;
+        }
+        cart.TotalPrice = cart.CartItems.Sum(i => i.Quantity * i.UnitPrice);
+        cart.UpdatedAt = DateTime.UtcNow;
+
+        if (cart.CartItems.Count == 0)
+        {
+            dbContext.Remove(cart);
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        return true;
+
+
+    }
+
+    public async Task<CartEntity?> ShowCart(Guid UserId, CancellationToken ctx = default)
+    {
+        return await dbContext.Set<CartEntity>()
+            .Include(cart => cart.CartItems)
+            .FirstOrDefaultAsync(cart => cart.UserId == UserId);
     }
 }

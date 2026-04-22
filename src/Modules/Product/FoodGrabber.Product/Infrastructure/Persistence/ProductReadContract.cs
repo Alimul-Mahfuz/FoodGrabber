@@ -17,4 +17,17 @@ public sealed class ProductReadContract(DbContext dbContext) : IProductReadContr
                 product.IsActive))
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<List<ProductPricingResponse>> GetPricingByIdsAsync(Guid[] productIds, CancellationToken ct = default)
+    {
+        return await dbContext.Set<Entities.Product>()
+            .AsNoTracking()
+            .Where(product => productIds.Contains(product.Id))
+            .Select(product => new ProductPricingResponse(
+                product.Id,
+                product.Name,
+                product.SellingPrice,
+                product.IsActive))
+            .ToListAsync(ct);
+    }
 }

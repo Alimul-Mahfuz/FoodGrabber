@@ -7,7 +7,7 @@ using ProductEntity = FoodGrabber.Product.Entities.Product;
 
 namespace FoodGrabber.Product.Services;
 
-public sealed class ProductService(IProductRepository productRepository) : IProductService, IProductContract
+public sealed class ProductService(IProductRepository productRepository) : IProductService, IProductReadContract, IProductContract
 {
     public async Task<PagedResult<ProductResponse>> GetAllAsync(PaginationQuery paginationQuery, CancellationToken cancellationToken = default)
     {
@@ -163,17 +163,52 @@ public sealed class ProductService(IProductRepository productRepository) : IProd
             product.UpdatedAt);
     }
 
-    public Task<List<ProductPriceResponse>> GetThePriceById(string[] ProductId, CancellationToken ctx)
+    public async Task<ProductPricingResponse?> GetPricingAsync(Guid productId, CancellationToken ct = default)
     {
-        var inValidate = ProductId.Where(id => !Guid.TryParse(id, out _)).ToList();
+        var product = await productRepository.GetByIdAsync(productId, ct);
+        if (product is null || !product.IsActive)
+        {
+            return null;
+        }
+
+        return new ProductPricingResponse(
+            product.Id,
+            product.Name,
+            product.SellingPrice,
+            product.IsActive);
+    }
+
+    public async Task<List<ProductPricingResponse>> GetPricingByIdsAsync(Guid[] productIds, CancellationToken ct = default)
+    {
+        var products = await productRepository.GetAllProductPricesByIds(productIds, ct);
+        return products
+            .Where(p => p.IsActive)
+            .Select(p => new ProductPricingResponse(
+                p.Id,
+                p.Name,
+                p.SellingPrice,
+                p.IsActive))
+            .ToList();
+    }
+
+    public async Task<List<ProductPriceResponse>> GetThePriceById(string[] productIds, CancellationToken ctx = default)
+    {
+        var inValidate = productIds.Where(id => !Guid.TryParse(id, out _)).ToList();
 
         if (inValidate.Any())
         {
             throw new ArgumentException("Invalid Guid found");
         }
 
-        var guiIds = ProductId.Select(Guid.Parse).ToArray();
+        var guiIds = productIds.Select(Guid.Parse).ToArray();
+        var productList = await productRepository.GetAllProductPricesByIds(guiIds, ctx);
 
-        var productList = productRepository.GetAllProductPricesByIds(guiIds, ctx);
+        return productList
+            .Where(p => p.IsActive)
+            .Select(p => new ProductPriceResponse(
+                p.Id.ToString(),
+                p.Name,
+                p.SellingPrice))
+            .ToList();
     }
 }

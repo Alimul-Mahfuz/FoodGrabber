@@ -19,9 +19,11 @@ public static class ProductModuleExtensions
 {
     public static IServiceCollection AddProductModule(this IServiceCollection services)
     {
+        services.AddScoped<ProductService>();
         services.AddScoped<IProductRepository, EfProductRepository>();
-        services.AddScoped<IProductReadContract, ProductReadContract>();
-        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IProductService>(sp => sp.GetRequiredService<ProductService>());
+        services.AddScoped<IProductReadContract>(sp => sp.GetRequiredService<ProductService>());
+        services.AddScoped<IProductContract>(sp => sp.GetRequiredService<ProductService>());
         services.AddScoped<IProductSeedService, ProductSeedService>();
         return services;
     }

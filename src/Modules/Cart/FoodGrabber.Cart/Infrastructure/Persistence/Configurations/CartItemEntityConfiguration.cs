@@ -14,6 +14,9 @@ public sealed class CartItemEntityConfiguration : IEntityTypeConfiguration<Entit
         builder.Property(cartItem => cartItem.ItemType).IsRequired().HasMaxLength(80).HasColumnName("item_type");
         builder.Property(cartItem => cartItem.Quantity).HasColumnName("quantity");
         builder.Property(cartItem => cartItem.ItemId).HasColumnName("item_id");
+        builder.Property(cartItem => cartItem.UnitPrice)
+            .HasPrecision(18, 2)
+            .HasColumnName("unit_price");
         builder.Property(cartItem => cartItem.CreatedAt).HasColumnName("created_at");
         builder.Property(cartItem => cartItem.UpdatedAt).HasColumnName("updated_at");
 

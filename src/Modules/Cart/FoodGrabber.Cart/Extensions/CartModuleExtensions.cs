@@ -26,6 +26,9 @@ public static class CartModuleExtensions
             .WithTags("Cart");
 
         group.MapPost("add", AddToCart);
+        group.MapPost("remove", RemoveItemFromCart);
+        group.MapGet("myCart", ViewCart);
+
 
         return app;
     }
@@ -52,11 +55,74 @@ public static class CartModuleExtensions
         try
         {
             var response = await cartService.CreateCartAsync(addToCartRequest, userId, ctx);
-            return Results.Ok(response);
+            return response.IsSuccess ? Results.Ok(response.Value) : Results.BadRequest(response.Error);
         }
         catch (Exception ex)
         {
             return Results.BadRequest(new { message = ex.Message });
         }
+    }
+
+    private static async Task<IResult> RemoveItemFromCart(
+        [FromBody] RemoveItemFromCartRequest removeItemFromCartRequest,
+        [FromServices] ICartService cart,
+        CancellationToken ctx,
+        ClaimsPrincipal user
+        )
+    {
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            return Results.Unauthorized();
+        }
+
+        var userIdValue = user.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? user.FindFirstValue("sub");
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var response = await cart.RemoveItemFromCart(removeItemFromCartRequest, userIdValue, ctx);
+            return response.IsSuccess ? Results.Ok(response.Value) : Results.BadRequest(response.Error);
+
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex.Message);
+        }
+    }
+
+    private static async Task<IResult> ViewCart(
+        [FromServices] ICartService cartService,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken
+        )
+    {
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            return Results.Unauthorized();
+        }
+
+        var userIdValue = user.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? user.FindFirstValue("sub");
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var response = await cartService.ViewMyCart(userId, cancellationToken);
+            return response.IsSuccess ? Results.Ok(response.Value) : Results.BadRequest(response.Error);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(ex.Message);
+        }
+
     }
 }

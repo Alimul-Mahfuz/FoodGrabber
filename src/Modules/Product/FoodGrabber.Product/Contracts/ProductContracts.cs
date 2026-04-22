@@ -5,6 +5,7 @@ namespace FoodGrabber.Product.Contracts;
 public interface IProductReadContract
 {
     Task<ProductPricingResponse?> GetPricingAsync(Guid productId, CancellationToken ct = default);
+    Task<List<ProductPricingResponse>> GetPricingByIdsAsync(Guid[] productIds, CancellationToken ct = default);
 }
 
 public sealed record ProductPricingResponse(
