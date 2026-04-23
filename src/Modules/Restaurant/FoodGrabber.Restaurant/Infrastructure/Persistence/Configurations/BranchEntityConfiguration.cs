@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace FoodGrabber.Order.Infrastructure.Persistence.Configurations;
+namespace FoodGrabber.Restaurant.Infrastructure.Persistence.Configurations;
 
 public sealed class BranchEntityConfiguration : IEntityTypeConfiguration<Entities.Branch>
 {

@@ -8,6 +8,7 @@ using FoodGrabber.Inventory.Extensions;
 using FoodGrabber.Menu.Extensions;
 using FoodGrabber.Order.Extensions;
 using FoodGrabber.Product.Extensions;
+using FoodGrabber.Restaurant.Extensions;
 using FoodGrabber.Shared.Abstractions;
 using FoodGrabber.Shared.Services;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public static class ServiceExtensions
             options => options.UseSqlServer(connectionString));
         services.AddFrontendCors(configuration);
         services.AddObjectStorage(configuration);
+        services.AddRestaurantModule();
         services.AddOrderModule();
         services.AddMenuModule();
         services.AddProductModule();

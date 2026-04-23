@@ -4,6 +4,7 @@ using FoodGrabber.Cart.Infrastructure.Persistence.Configurations;
 using FoodGrabber.Menu.Infrastructure.Persistence.Configurations;
 using FoodGrabber.Order.Infrastructure.Persistence.Configurations;
 using FoodGrabber.Product.Infrastructure.Persistence.Configurations;
+using FoodGrabber.Restaurant.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -31,9 +32,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<FoodGrabber.Order.Entities.OrderDetails> OrderDetails => Set<FoodGrabber.Order.Entities.OrderDetails>();
     public DbSet<FoodGrabber.Order.Entities.OrderStatusHistory> OrderStatusHistory => Set<FoodGrabber.Order.Entities.OrderStatusHistory>();
     public DbSet<FoodGrabber.Order.Entities.OrderItemModifier> OrderItemModifiers => Set<FoodGrabber.Order.Entities.OrderItemModifier>();
-    public DbSet<FoodGrabber.Order.Entities.Restaurant> Restaurants => Set<FoodGrabber.Order.Entities.Restaurant>();
-    public DbSet<FoodGrabber.Order.Entities.Branch> Branches => Set<FoodGrabber.Order.Entities.Branch>();
-    public DbSet<FoodGrabber.Order.Entities.DiningTable> DiningTables => Set<FoodGrabber.Order.Entities.DiningTable>();
+    public DbSet<FoodGrabber.Restaurant.Entities.Restaurant> Restaurants => Set<FoodGrabber.Restaurant.Entities.Restaurant>();
+    public DbSet<FoodGrabber.Restaurant.Entities.Branch> Branches => Set<FoodGrabber.Restaurant.Entities.Branch>();
+    public DbSet<FoodGrabber.Restaurant.Entities.DiningTable> DiningTables => Set<FoodGrabber.Restaurant.Entities.DiningTable>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +45,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MenuEntityConfiguration).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderEntityConfiguration).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ProductEntityConfiguration).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(RestaurantEntityConfiguration).Assembly);
 
         modelBuilder.Entity<ApplicationUser>().ToTable("Users");
         modelBuilder.Entity<ApplicationRole>().ToTable("Roles");

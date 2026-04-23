@@ -1,3 +1,5 @@
+using FoodGrabber.Restaurant.Entities;
+
 namespace FoodGrabber.Order.Entities;
 
 public class Order

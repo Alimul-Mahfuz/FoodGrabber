@@ -1,6 +1,11 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace FoodGrabber.Restaurant.Extensions;
 
 public static class RestaurantModuleExtensions
 {
-    // Register Restaurant module services here
+    public static IServiceCollection AddRestaurantModule(this IServiceCollection services)
+    {
+        return services;
+    }
 }

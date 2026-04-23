@@ -1,4 +1,4 @@
-namespace FoodGrabber.Order.Entities;
+namespace FoodGrabber.Restaurant.Entities;
 
 public class Restaurant
 {

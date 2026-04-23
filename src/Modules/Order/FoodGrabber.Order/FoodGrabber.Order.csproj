@@ -19,6 +19,7 @@
 		<ProjectReference Include="..\..\..\Shared\FoodGrabber.Shared\FoodGrabber.Shared.csproj" />
 		<ProjectReference Include="..\..\Menu\FoodGrabber.Menu\FoodGrabber.Menu.csproj" />
 		<ProjectReference Include="..\..\Product\FoodGrabber.Product\FoodGrabber.Product.csproj" />
+		<ProjectReference Include="..\..\Restaurant\FoodGrabber.Restaurant\FoodGrabber.Restaurant.csproj" />
 	</ItemGroup>
 
 

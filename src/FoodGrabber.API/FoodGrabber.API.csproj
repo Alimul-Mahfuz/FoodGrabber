@@ -23,6 +23,7 @@
     <ProjectReference Include="..\Modules\Menu\FoodGrabber.Menu\FoodGrabber.Menu.csproj" />
     <ProjectReference Include="..\Modules\Order\FoodGrabber.Order\FoodGrabber.Order.csproj" />
     <ProjectReference Include="..\Modules\Product\FoodGrabber.Product\FoodGrabber.Product.csproj" />
+    <ProjectReference Include="..\Modules\Restaurant\FoodGrabber.Restaurant\FoodGrabber.Restaurant.csproj" />
     <ProjectReference Include="..\Shared\FoodGrabber.Shared\FoodGrabber.Shared.csproj" />
   </ItemGroup>
 
